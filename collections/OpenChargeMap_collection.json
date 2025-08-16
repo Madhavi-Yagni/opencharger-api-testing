@@ -1,0 +1,284 @@
+{
+	"info": {
+		"_postman_id": "f6eab249-ba56-4d57-a480-9640fdb041b8",
+		"name": "OpenChargeMap API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "31478947"
+	},
+	"item": [
+		{
+			"name": "GET POI",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"let response = pm.response.json();\r",
+							"\r",
+							"// Test Case 1 - Validate Response Status Code is 200\r",
+							"pm.test(\"Validate status code is 200\", () => {\r",
+							"  pm.expect(pm.response.code).to.eql(200);\r",
+							"});\r",
+							"\r",
+							"// Test Case 2 - Validate Response Time  \r",
+							"pm.test(\"Validate response time is under provided threshold\", function() {\r",
+							"    const responseTimeThreshold = Number(pm.environment.get(\"responseTimeThreshold\"));\r",
+							"    pm.expect(pm.response.responseTime, \"Response time was longer than \" + responseTimeThreshold + \" ms.\").to.be.below(responseTimeThreshold);\r",
+							"});\r",
+							"\r",
+							"// Test Case 3 - Validate Response Schema\r",
+							"pm.test(\"Validate Response Schema\", function () {\r",
+							"    pm.expect(Array.isArray(response)).to.be.true;\r",
+							"    response.forEach((poi, index) => {\r",
+							"        pm.expect(poi,`Missing 'ID' in POI at index ${index}`).to.have.property(\"ID\");\r",
+							"        pm.expect(poi, `Missing 'AddressInfo' in POI at index ${index}`).to.have.property(\"AddressInfo\");\r",
+							"        pm.expect(poi.AddressInfo, `Missing 'Latitude' in AddressInfo at index ${index}`).to.have.property(\"Latitude\");\r",
+							"        pm.expect(poi.AddressInfo, `Missing 'Longitude' in AddressInfo at index ${index}`).to.have.property(\"Longitude\");\r",
+							"        pm.expect(poi, `Missing 'NumberOfPoints' in POI at index ${index}`).to.have.property(\"NumberOfPoints\");\r",
+							"    });\r",
+							"});\r",
+							"\r",
+							"// Test Case 4 - Validate POI Result Count\r",
+							"pm.test(\"Validate POI result count\", function () {\r",
+							"    pm.expect(response.length, \"Expected exactly 5 results\").to.equal(5);\r",
+							"});\r",
+							"\r",
+							"// Test Case 5 - Validate POIs are with in 10km range\r",
+							"pm.test(\"Validate all POIs are within 10km of target coordinates\", function () {\r",
+							"    response.forEach((poi, index) => {\r",
+							"        const distance = poi.AddressInfo.Distance;\r",
+							"        pm.expect(distance, `POI at index ${index} is ${distance} km away`).to.be.below(10);\r",
+							"    });\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "text"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseURL}}/poi?key={{apiKey}}&latitude=51.5074&longitude=0.1278&distance=10&maxresults=5",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"poi"
+					],
+					"query": [
+						{
+							"key": "key",
+							"value": "{{apiKey}}"
+						},
+						{
+							"key": "latitude",
+							"value": "51.5074"
+						},
+						{
+							"key": "longitude",
+							"value": "0.1278"
+						},
+						{
+							"key": "distance",
+							"value": "10"
+						},
+						{
+							"key": "maxresults",
+							"value": "5"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET Reference",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"\r",
+							"let response = pm.response.json();\r",
+							"\r",
+							"// Test Case 1 - Validate Response Status Code is 200\r",
+							"pm.test(\"Validate status code is 200\", () => {\r",
+							"  pm.expect(pm.response.code).to.eql(200);\r",
+							"});\r",
+							"\r",
+							"// Test Case 2 - Validate Response Time  \r",
+							"pm.test(\"Validate response time is under provided threshold\", function() {\r",
+							"    const responseTimeThreshold = Number(pm.environment.get(\"responseTimeThreshold\"));\r",
+							"    pm.expect(pm.response.responseTime, \"Response time was longer than \" + responseTimeThreshold + \" ms.\").to.be.below(responseTimeThreshold);\r",
+							"});\r",
+							"\r",
+							"// Test Case 3 - Schema Validation\r",
+							"pm.test(\"Validate schema\", function () {\r",
+							"    const referenceDataTypes = [\"ChargerTypes\", \"StatusTypes\", \"ConnectionTypes\", \"CurrentTypes\", \"Countries\", \"DataProviders\"]; \r",
+							"    referenceDataTypes.forEach((arrayName) => {\r",
+							"        // Check array exists\r",
+							"        pm.expect(response, `Missing '${arrayName}' array`).to.have.property(arrayName);\r",
+							"        const items = response[arrayName];\r",
+							"\r",
+							"        // Check it's an array\r",
+							"        pm.expect(Array.isArray(items), `'${arrayName}' should be an array`).to.be.true;\r",
+							"\r",
+							"        // Validate each item in the array\r",
+							"        items.forEach((item, index) => {\r",
+							"            pm.expect(item, `Missing 'ID' in ${arrayName}[${index}]`).to.have.property(\"ID\");\r",
+							"            pm.expect(item, `Missing 'Title' in ${arrayName}[${index}]`).to.have.property(\"Title\");\r",
+							"        });\r",
+							"    });\r",
+							"});\r",
+							"\r",
+							"// Test Case 4 - ChargerType Array \r",
+							"pm.test(\"Validate chargerTypes contains both Fast and Slow chargers\", function () {\r",
+							"    // Ensure ChargerTypes exists and is an array\r",
+							"    pm.expect(response).to.have.property(\"ChargerTypes\");\r",
+							"    let chargerTypes = response.ChargerTypes;\r",
+							"    pm.expect(Array.isArray(chargerTypes), \"ChargerTypes should be an array\").to.be.true;\r",
+							"\r",
+							"    // Flags to track presence\r",
+							"    let hasFastCharger = false;\r",
+							"    let hasSlowCharger = false;\r",
+							"\r",
+							"    // Scan each charger type\r",
+							"    chargerTypes.forEach((type, index) => {\r",
+							"        if (type.IsFastChargeCapable === true) {\r",
+							"            hasFastCharger = true;\r",
+							"        }\r",
+							"        if (type.IsFastChargeCapable === false) {\r",
+							"            hasSlowCharger = true;\r",
+							"        }\r",
+							"    });\r",
+							"\r",
+							"    // Final assertions\r",
+							"    pm.expect(hasFastCharger, \"No Fast charger type found (IsFastChargeCapable: true)\").to.be.true;\r",
+							"    pm.expect(hasSlowCharger, \"No Slow charger type found (IsFastChargeCapable: false)\").to.be.true;\r",
+							"});\r",
+							"\r",
+							"// Test Case 5 - Assert that there are no duplicate IDs in StatusTypes\r",
+							"pm.test(\"Validate statusTypes should have unique IDs\", function () {\r",
+							"    let statusTypes = response.StatusTypes;\r",
+							"\r",
+							"    // Create a Set to store unique IDs\r",
+							"    let idSet = new Set();\r",
+							"\r",
+							"    // Flag to track duplicates\r",
+							"    let hasDuplicate = false;\r",
+							"\r",
+							"    // Loop through each item and check for duplicates\r",
+							"    statusTypes.some(item => {\r",
+							"        if (idSet.has(item.ID)) {\r",
+							"            hasDuplicate = true;\r",
+							"            return true; // stops iteration when duplicate found\r",
+							"        } else {\r",
+							"            idSet.add(item.ID);\r",
+							"            return false;\r",
+							"        }\r",
+							"    });\r",
+							"\r",
+							"    // Final assertion to check duplicates\r",
+							"    pm.expect(hasDuplicate).to.be.false;\r",
+							"});\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseURL}}/referencedata/?key={{apiKey}}",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"referencedata",
+						""
+					],
+					"query": [
+						{
+							"key": "key",
+							"value": "{{apiKey}}"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseURL",
+			"value": "https://api.openchargemap.io/v3",
+			"type": "string"
+		},
+		{
+			"key": "apiKey",
+			"value": "9bb03e5b-0fb2-4916-9b2b-26c6bd27a56a",
+			"type": "string"
+		}
+	]
+}
