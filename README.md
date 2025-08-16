@@ -10,8 +10,8 @@ This repository contains API test scripts for two endpoints:
 - **`collections/OpenChargeMap_collection.json`** — Postman collection containing requests and test scripts.
 - **`collections/production_environment.json`** — Postman environment file with test variables.
 - **`report/TestReport.html`** — HTML execution report generated via Newman.
+- **`report/TestReport_ResponseTimeFailure.html`** — HTML execution report when response time exceeds 1000ms.
 - **`README.md`** — Instructions, observations, and assumptions.
-
 ---
 
 ## 🛠 Instructions: How to Import and Run the Tests
